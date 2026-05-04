@@ -113,6 +113,9 @@ private struct TodoRow: View {
     let todo: Todo
     @EnvironmentObject var store: TodoStore
     @State private var hovering = false
+    @State private var isEditing = false
+    @State private var draft: String = ""
+    @FocusState private var editFocused: Bool
 
     var body: some View {
         HStack(spacing: 10) {
@@ -123,14 +126,27 @@ private struct TodoRow: View {
             }
             .buttonStyle(.plain)
 
-            Text(todo.title)
-                .strikethrough(todo.isDone)
-                .foregroundStyle(todo.isDone ? .secondary : .primary)
-                .lineLimit(2)
+            if isEditing {
+                TextField("", text: $draft)
+                    .textFieldStyle(.plain)
+                    .focused($editFocused)
+                    .onSubmit(commitEdit)
+                    .onExitCommand(perform: cancelEdit)
+                    .onChange(of: editFocused) { focused in
+                        if !focused { commitEdit() }
+                    }
+            } else {
+                Text(todo.title)
+                    .strikethrough(todo.isDone)
+                    .foregroundStyle(todo.isDone ? .secondary : .primary)
+                    .lineLimit(2)
+                    .contentShape(Rectangle())
+                    .onTapGesture(perform: beginEdit)
+            }
 
             Spacer(minLength: 0)
 
-            if hovering {
+            if hovering && !isEditing {
                 Button(action: { store.remove(todo) }) {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(.secondary)
@@ -140,7 +156,6 @@ private struct TodoRow: View {
                 .help("삭제")
             }
         }
-        .contentShape(Rectangle())
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
         .background(
@@ -149,6 +164,27 @@ private struct TodoRow: View {
                 .padding(.horizontal, 4)
         )
         .onHover { hovering = $0 }
+    }
+
+    private func beginEdit() {
+        draft = todo.title
+        isEditing = true
+        DispatchQueue.main.async { editFocused = true }
+    }
+
+    private func commitEdit() {
+        guard isEditing else { return }
+        let trimmed = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        isEditing = false
+        guard !trimmed.isEmpty, trimmed != todo.title else { return }
+        var updated = todo
+        updated.title = trimmed
+        store.update(updated)
+    }
+
+    private func cancelEdit() {
+        isEditing = false
+        draft = todo.title
     }
 }
 

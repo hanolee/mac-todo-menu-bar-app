@@ -4,7 +4,7 @@ set -euo pipefail
 NAME="TodoMenuBar"
 APP_DIR="$NAME.app"
 BUNDLE_ID="com.local.todomenubar"
-VERSION="${VERSION:-1.0.1}"
+VERSION="${VERSION:-1.0.2}"
 
 cd "$(dirname "$0")"
 
