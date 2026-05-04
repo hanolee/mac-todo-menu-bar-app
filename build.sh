@@ -46,6 +46,19 @@ cat > "$APP_DIR/Contents/Info.plist" <<EOF
 </plist>
 EOF
 
+echo "Ad-hoc code signing..."
+codesign --force --deep --sign - \
+    --options runtime \
+    --identifier "$BUNDLE_ID" \
+    "$APP_DIR"
+
+codesign --verify --deep --strict --verbose=2 "$APP_DIR" 2>&1 | sed 's/^/   /'
+
+ZIP_NAME="$NAME-1.0.0.zip"
+echo "Creating $ZIP_NAME..."
+rm -f "$ZIP_NAME"
+ditto -c -k --keepParent "$APP_DIR" "$ZIP_NAME"
+
 echo ""
 echo "Done. $APP_DIR is ready."
 echo "Run:        open $APP_DIR"
