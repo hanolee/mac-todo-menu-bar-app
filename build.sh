@@ -4,6 +4,7 @@ set -euo pipefail
 NAME="TodoMenuBar"
 APP_DIR="$NAME.app"
 BUNDLE_ID="com.local.todomenubar"
+VERSION="${VERSION:-1.0.1}"
 
 cd "$(dirname "$0")"
 
@@ -31,9 +32,9 @@ cat > "$APP_DIR/Contents/Info.plist" <<EOF
     <key>CFBundleDisplayName</key>
     <string>Todo Menu Bar</string>
     <key>CFBundleVersion</key>
-    <string>1.0.0</string>
+    <string>$VERSION</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0.0</string>
+    <string>$VERSION</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>LSMinimumSystemVersion</key>
@@ -54,7 +55,7 @@ codesign --force --deep --sign - \
 
 codesign --verify --deep --strict --verbose=2 "$APP_DIR" 2>&1 | sed 's/^/   /'
 
-ZIP_NAME="$NAME-1.0.0.zip"
+ZIP_NAME="$NAME-$VERSION.zip"
 echo "Creating $ZIP_NAME..."
 rm -f "$ZIP_NAME"
 ditto -c -k --keepParent "$APP_DIR" "$ZIP_NAME"
